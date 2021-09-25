@@ -10,6 +10,22 @@ struct path_pair {
 
 };
 
+
+void multi_copy() {
+	int input;
+	std::vector<path_pair> path_pairs;
+	std::cout << "How many directories to copy?\n";
+	std::cin >> input;
+	while (input) {
+		
+	}
+}
+
+void copy_confirm() {
+
+
+}
+
 void file_open(const std::string* in_path, const std::string* dest_path) {
 	std::ifstream src;
 	std::ofstream dst;
@@ -27,7 +43,9 @@ void file_open(const std::string* in_path, const std::string* dest_path) {
 
 int dir_copy(const std::string* in_path, const std::string* out_path, bool overwrite) {
 
-	std::string newpath = *out_path + "/" + *in_path;
+	int index(in_path->rfind("/"));
+	std::string end = in_path->substr(index + 1);
+	std::string newpath = *out_path + "/" + end;
 	
 	auto copyoptions = fs::copy_options::recursive;
 
@@ -60,6 +78,46 @@ int dir_copy(const std::string* in_path, const std::string* out_path, bool overw
 
 }
 
+int dir_copy(const path_pair* path, const bool overwrite) {
+
+	std::string in_path = path->src;
+	std::string out_path = path->dst;
+
+	int index(in_path.rfind("/"));
+	std::string end = in_path.substr(index + 1);
+	std::string newpath = out_path + "/" + end;
+
+	auto copyoptions = fs::copy_options::recursive;
+
+	if (overwrite) {
+		copyoptions = fs::copy_options::recursive | fs::copy_options::overwrite_existing;
+	}
+
+	if (!fs::exists(newpath)) {
+		fs::create_directories(newpath);
+	}
+	else if (fs::exists(newpath) && overwrite == false) {
+		std::cout << "Path already exists! Overwrite? [y/n]" << std::endl;
+		char input;
+		std::cin >> input;
+		if (input == 'y') {
+			copyoptions = fs::copy_options::recursive | fs::copy_options::overwrite_existing;
+		}
+		else if (input == 'n') {
+			std::cout << "Skipped!" << std::endl;
+			return 1;
+		}
+		else {
+			std::cout << "Bad input" << std::endl;
+			return 1;
+		}
+	}
+
+	fs::copy(in_path, newpath, copyoptions);
+	return 0;
+
+}
+
 void loadfromtxt(std::string path) {
 
 
@@ -84,6 +142,8 @@ path_pair file_dialogue()
 
 }
 
+
+
 int main() {
 	
 	int input = 0;
@@ -94,10 +154,10 @@ int main() {
 	std::vector<std::string> list_copy;
 	std::vector<std::string> list_dest;
 
+	std::vector<path_pair> pathpair_list;
+
 
 	std::cout << "AntiProtonic's Backup Utility" << std::endl;
-
-
 
 	while (input < 2) {
 

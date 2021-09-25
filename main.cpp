@@ -4,6 +4,12 @@
 
 namespace fs = std::filesystem;
 
+struct path_pair {
+	std::string src;
+	std::string dst;
+
+};
+
 void file_open(const std::string* in_path, const std::string* dest_path) {
 	std::ifstream src;
 	std::ofstream dst;
@@ -60,31 +66,45 @@ void loadfromtxt(std::string path) {
 
 }
 
+path_pair file_dialogue()
+{
+	std::string filepath;
+	std::string filedest;
+	path_pair output;
+
+	std::cout << "Directory to copy." << std::endl;
+	std::cin >> filepath;
+	std::cout << "Directory to be copied to." << std::endl;
+	std::cin >> filedest;
+
+	output.src = filepath;
+	output.dst = filedest;
+
+	return(output);
+
+}
 
 int main() {
 	
 	int input = 0;
 	std::string cinput;
+	int iinput;
 	bool auto_overwrite = false;
 
 	std::vector<std::string> list_copy;
 	std::vector<std::string> list_dest;
 
 
-	std::string filepath;
-	std::string filedest;
-
 	std::cout << "AntiProtonic's Backup Utility" << std::endl;
 
 
 
 	while (input < 2) {
-		std::cout << "Directory to copy." << std::endl;
-		std::cin >> filepath;
-		list_copy.push_back(filepath);
-		std::cout << "Directory to be copied to." << std::endl;
-		std::cin >> filedest;
-		list_dest.push_back(filedest);
+
+		path_pair output = file_dialogue();
+
+		list_copy.push_back(output.src);
+		list_dest.push_back(output.dst);
 		input++;
 	}
 
@@ -105,7 +125,13 @@ int main() {
 		std::cin >> cinput;
 		if (cinput == "y") {
 			std::cout << "Which entry?" << std::endl;
-			std::cin >> cinput;
+			std::cin >> iinput;
+			path_pair output = file_dialogue();
+			list_copy.at(iinput) = output.src;
+			list_dest.at(iinput) = output.dst;
+			for (int i = 0; i < list_copy.size(); i++) {
+				dir_copy(&list_copy.at(i), &list_dest.at(i), auto_overwrite);
+			}
 			
  		}
 		if (cinput == "n") {
@@ -117,3 +143,4 @@ int main() {
 	return 0;
 
 }
+

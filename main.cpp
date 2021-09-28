@@ -78,6 +78,7 @@ std::string pathfix(const std::string* input) {
 		case '\r':  output += "\\r";        break;
 		case '\t':  output += "\\t";        break;
 		case '\v':  output += "\\v";        break;
+		case '/':  output += "\\";        break;
 		default:    output += i;            break;
 
 		}
@@ -152,12 +153,18 @@ path_pair file_dialogue()
 
 }
 
-bool copy_confirm(std::vector<path_pair>* list) {
+bool copy_confirm(std::vector<path_pair>* list, bool write = false) {
 
 	std::string cinput;
 	int iinput = 0;
 	while (true) {
-		std::cout << "These files will be copied:" << std::endl;
+		if(!write){
+			std::cout << "\nThese files will be copied:" << std::endl;
+		}
+		else if (write) {
+			std::cout << "\nThese paths will be written to txt:" << std::endl;
+		}
+
 		for (int i = 0; i < list->size(); i++) {
 			std::cout << list->at(i).src + " to " + list->at(i).dst << std::endl;
 		}
@@ -258,6 +265,58 @@ int loadfromtxt() {
 
 }
 
+void savetotxt() {
+	std::string txtpath;
+	int iinput = 0;
+
+	std::vector<path_pair> paths_to_save;
+
+
+	std::cout << "Path of .txt to save?\n";
+	std::cin >> txtpath;
+
+	txtpath = pathfix(&txtpath);
+
+	int last_slash = txtpath.rfind("\\");
+
+	std::string dir_path = txtpath.substr(0, last_slash);
+
+	if (!fs::exists(dir_path)) {
+		fs::create_directories(dir_path);
+		std::cout << "Created directories...\n";
+	}
+
+	std::ofstream txt_out(txtpath, std::ios::binary);
+
+	std::cout << "How many paths to save?\n";
+	while (!(std::cin >> iinput)) {
+		std::cout << "Bad input \n";
+		std::cin.clear();
+		std::cin.ignore(10000, '\n');
+	}
+	
+
+	for (int i = 0; i < iinput; i++) {
+		paths_to_save.push_back(file_dialogue());
+		
+	}
+
+	if (copy_confirm(&paths_to_save, true)) {
+
+		for (int i = 0; i < paths_to_save.size(); i++) {
+			txt_out.write(paths_to_save.at(i).src.c_str(), paths_to_save.at(i).src.length());
+			txt_out.write("\n", 1);
+			txt_out.write(paths_to_save.at(i).dst.c_str(), paths_to_save.at(i).dst.length());
+			txt_out.write("\n", 1);
+		}
+		txt_out.close();
+	}
+
+
+
+
+}
+
 void single_copy() {
 	path_pair path = file_dialogue();
 	dir_copy(&path, false);
@@ -290,7 +349,8 @@ bool start_menu() {
 	std::cout << "1. Single copy\n";
 	std::cout << "2. Multi-copy\n";
 	std::cout << "3. Load path pairs from .txt\n";
-	std::cout << "4. Quit\n";
+	std::cout << "4. Write paths to .txt\n";
+	std::cout << "5. Quit\n";
 
 	std::cin >> input;
 
@@ -306,6 +366,9 @@ bool start_menu() {
 		loadfromtxt();
 	}
 	if (input == 4) {
+		savetotxt();
+	}
+	if (input == 5) {
 		return false;
 	}
 

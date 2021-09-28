@@ -69,8 +69,6 @@ std::string pathfix(const std::string* input) {
 
 	std::string output;
 
-
-
 	for (const char i : *input) {
 		switch (i) {
 		case '\a':  output += "\\a";        break;
@@ -200,8 +198,14 @@ void overwrite_dialogue(bool* overwrite_ptr) {
 	}
 }
 
-int loadfromtxt(std::string path) {
-	std::ifstream file_open(path, std::ios_base::in);
+int loadfromtxt() {
+	std::string path, path_out;
+
+	std::cout << "Path to load from?\n";
+	std::cin >> path;
+	path_out = pathfix(&path);
+
+	std::ifstream file_open(path_out, std::ios_base::in);
 	std::string output;
 	std::vector<std::string> output_vector;
 	std::vector<path_pair>* path_pairs = new std::vector<path_pair>;
@@ -299,7 +303,7 @@ bool start_menu() {
 	}
 
 	if (input == 3) {
-		loadfromtxt("textinput.txt");
+		loadfromtxt();
 	}
 	if (input == 4) {
 		return false;

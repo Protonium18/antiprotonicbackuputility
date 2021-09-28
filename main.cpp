@@ -142,7 +142,17 @@ path_pair file_dialogue()
 	path_pair output;
 
 	std::cout << "Directory to copy." << std::endl;
-	std::cin >> filepath;
+
+	while (true) {
+		std::cin >> filepath;
+		if (fs::exists(filepath)) {
+			break;
+		}
+		else {
+			std::cout << "Directory does not exist.\n";
+		}
+	}
+
 	std::cout << "Directory to be copied to." << std::endl;
 	std::cin >> filedest;
 
@@ -156,7 +166,7 @@ path_pair file_dialogue()
 bool copy_confirm(std::vector<path_pair>* list, bool write = false) {
 
 	std::string cinput;
-	int iinput = 0;
+	unsigned int iinput = 0;
 	while (true) {
 		if(!write){
 			std::cout << "\nThese files will be copied:" << std::endl;
@@ -170,22 +180,45 @@ bool copy_confirm(std::vector<path_pair>* list, bool write = false) {
 		}
 	
 		std::cout << "Continue? [y/n]" << std::endl;
-		std::cin >> cinput;
-		if (cinput == "y") {
-			return true;
-		}
-		else if (cinput == "n") {
-			std::cout << "Alter entry? [y/n]" << std::endl;
+		
+		while (true) {
 			std::cin >> cinput;
 			if (cinput == "y") {
-				std::cout << "Which entry?" << std::endl;
-				std::cin >> iinput;
-				path_pair output = file_dialogue();
-				list->at(iinput).src = output.src;
-				list->at(iinput).dst = output.dst;
+				return true;
 			}
 			else if (cinput == "n") {
-				return false;
+				std::cout << "Alter entry? [y/n]" << std::endl;
+				while (true) {
+					std::cin >> cinput;
+					if (cinput == "y") {
+						std::cout << "Which entry?" << std::endl;
+						while (true) {
+							std::cin >> iinput;
+							if (std::cin && iinput < list->size()) {
+								path_pair output = file_dialogue();
+								list->at(iinput).src = output.src;
+								list->at(iinput).dst = output.dst;
+								break;
+							}
+							else {
+								std::cout << "Invalid entry.\n";
+								std::cin.clear();
+								std::cin.ignore(10000, '\n');
+							}
+						}
+						break;
+					}
+					else if (cinput == "n") {
+						return false;
+					}
+					else {
+						std::cout << "Invalid entry.\n";
+					}
+				}
+				break;
+			}
+			else {
+				std::cout << "Invalid entry.\n";
 			}
 		}
 	}
@@ -267,7 +300,7 @@ int loadfromtxt() {
 
 void savetotxt() {
 	std::string txtpath;
-	int iinput = 0;
+	unsigned int iinput = 0;
 
 	std::vector<path_pair> paths_to_save;
 
@@ -323,14 +356,18 @@ void single_copy() {
 }
 
 void multi_copy() {
-	int input = 0;
+	unsigned int input = 0;
 	int count = 0;
 	bool overwrite = false;
 
 	std::vector<path_pair> path_pairs;
 
 	std::cout << "How many directories to copy?\n";
-	std::cin >> input;
+	while (!(std::cin >> input)) {
+		std::cout << "Invalid entry.\n";
+		std::cin.clear();
+		std::cin.ignore(10000, '\n');
+	}
 	while (count < input) {
 		path_pairs.push_back(file_dialogue());
 		count++;
@@ -343,8 +380,7 @@ void multi_copy() {
 }
 
 bool start_menu() {
-	int input = 0;
-
+	unsigned int input = 0;
 	std::cout << " \n";
 	std::cout << "1. Single copy\n";
 	std::cout << "2. Multi-copy\n";
@@ -352,26 +388,35 @@ bool start_menu() {
 	std::cout << "4. Write paths to .txt\n";
 	std::cout << "5. Quit\n";
 
-	std::cin >> input;
+	while (true) {
+		std::cin >> input;
+		if (input == 1) {
+			single_copy();
+			break;
+		}
 
-	if (input == 1) {
-		single_copy();
-	}
+		else if (input == 2) {
+			multi_copy();
+			break;
+		}
 
-	if (input == 2) {
-		multi_copy();
+		else if (input == 3) {
+			loadfromtxt();
+			break;
+		}
+		else if (input == 4) {
+			savetotxt();
+			break;
+		}
+		else if (input == 5) {
+			return false;
+		}
+		else {
+			std::cout << "Invalid entry.\n";
+			std::cin.clear();
+			std::cin.ignore(10000, '\n');
+		}
 	}
-
-	if (input == 3) {
-		loadfromtxt();
-	}
-	if (input == 4) {
-		savetotxt();
-	}
-	if (input == 5) {
-		return false;
-	}
-
 
 
 

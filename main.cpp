@@ -2,6 +2,7 @@
 #include <fstream>
 #include <filesystem>
 #include <string>
+#include <algorithm>
 
 namespace fs = std::filesystem;
 
@@ -64,12 +65,41 @@ int dir_copy(const std::string* in_path, const std::string* out_path, bool overw
 
 }
 
+std::string pathfix(const std::string* input) {
+
+	std::string output;
+
+
+
+	for (const char i : *input) {
+		switch (i) {
+		case '\a':  output += "\\a";        break;
+		case '\b':  output += "\\b";        break;
+		case '\f':  output += "\\f";        break;
+		case '\n':  output += "\\n";        break;
+		case '\r':  output += "\\r";        break;
+		case '\t':  output += "\\t";        break;
+		case '\v':  output += "\\v";        break;
+		default:    output += i;            break;
+
+		}
+	}
+
+	return(output);
+
+}
+
 int dir_copy(const path_pair* path, const bool overwrite) {
 
-	std::string in_path = path->src;
-	std::string out_path = path->dst;
+	std::string in_path = pathfix(&path->src);
+	std::string out_path = pathfix(&path->dst);
 
-	int index(in_path.rfind("/"));
+	int index(in_path.rfind("\\"));
+
+	if (index == std::string::npos) {
+		index = in_path.rfind("/");
+	}
+
 	std::string end = in_path.substr(index + 1);
 	std::string newpath = out_path + "/" + end;
 
@@ -83,7 +113,7 @@ int dir_copy(const path_pair* path, const bool overwrite) {
 		fs::create_directories(newpath);
 	}
 	else if (fs::exists(newpath) && overwrite == false) {
-		std::cout << "Path already exists! Overwrite? [y/n]" << std::endl;
+		std::cout << newpath + " already exists! Overwrite? [y/n]" << std::endl;
 		char input;
 		std::cin >> input;
 		if (input == 'y') {
@@ -98,6 +128,8 @@ int dir_copy(const path_pair* path, const bool overwrite) {
 			return 1;
 		}
 	}
+
+
 
 	fs::copy(in_path, newpath, copyoptions);
 	return 0;
@@ -126,12 +158,12 @@ bool copy_confirm(std::vector<path_pair>* list) {
 
 	std::string cinput;
 	int iinput = 0;
-
-	std::cout << "These files will be copied:" << std::endl;
-	for (int i = 0; i < list->size(); i++) {
-		std::cout << list->at(i).src + " to " + list->at(i).dst << std::endl;
-	}
 	while (true) {
+		std::cout << "These files will be copied:" << std::endl;
+		for (int i = 0; i < list->size(); i++) {
+			std::cout << list->at(i).src + " to " + list->at(i).dst << std::endl;
+		}
+	
 		std::cout << "Continue? [y/n]" << std::endl;
 		std::cin >> cinput;
 		if (cinput == "y") {
@@ -154,6 +186,20 @@ bool copy_confirm(std::vector<path_pair>* list) {
 	}
 }
 
+void overwrite_dialogue(bool* overwrite_ptr) {
+
+	std::string sinput;
+
+	std::cout << "Force overwrite on all files? [y/n]\n";
+	std::cin >> sinput;
+	if (sinput == "y") {
+		*overwrite_ptr = true;
+	}
+	else {
+		return;
+	}
+}
+
 int loadfromtxt(std::string path) {
 	std::ifstream file_open(path, std::ios_base::in);
 	std::string output;
@@ -169,7 +215,9 @@ int loadfromtxt(std::string path) {
 	}
 
 	while (std::getline(file_open, output)) {
-		output_vector.push_back(output);
+		if (output != "") {
+			output_vector.push_back(output);
+		}
 
 	}
 
@@ -195,6 +243,7 @@ int loadfromtxt(std::string path) {
 	file_open.close();
 
 	if (copy_confirm(path_pairs)) {
+		overwrite_dialogue(&overwrite);
 		for (int i = 0; i < path_pairs->size(); i++) {
 			dir_copy(&path_pairs->at(i), overwrite);
 		}
@@ -224,17 +273,20 @@ void multi_copy() {
 		count++;
 	}
 	copy_confirm(&path_pairs);
+	overwrite_dialogue(&overwrite);
 	for (int i = 0; i < count; i++) {
 		dir_copy(&path_pairs.at(i), overwrite);
 	}
 }
 
-void start_menu() {
+bool start_menu() {
 	int input = 0;
 
+	std::cout << " \n";
 	std::cout << "1. Single copy\n";
 	std::cout << "2. Multi-copy\n";
 	std::cout << "3. Load path pairs from .txt\n";
+	std::cout << "4. Quit\n";
 
 	std::cin >> input;
 
@@ -249,43 +301,22 @@ void start_menu() {
 	if (input == 3) {
 		loadfromtxt("textinput.txt");
 	}
+	if (input == 4) {
+		return false;
+	}
+
+
 
 
 }
 
 int main() {
-	
-	int input = 0;
-	std::string cinput;
-	int iinput;
-	bool auto_overwrite = false;
-
-	std::vector<std::string> list_copy;
-	std::vector<std::string> list_dest;
-
-	std::vector<path_pair> pathpair_list;
-
 
 	std::cout << "AntiProtonic's Backup Utility" << std::endl;
 
-	start_menu();
+	while (start_menu()) {
 
-	//while (input < 2) {
-
-	//	path_pair output = file_dialogue();
-	//	pathpair_list.push_back(output);
-	//	input++;
-	//}
-
-	//		}
-	//		
- //		}
-	//	if (cinput == "n") {
-	//		return 0;
-	//	}
-	//}
-
-
+	}
 	return 0;
 
 }

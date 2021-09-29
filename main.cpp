@@ -28,43 +28,6 @@ void file_open(const std::string* in_path, const std::string* dest_path) {
 
 }
 
-int dir_copy(const std::string* in_path, const std::string* out_path, bool overwrite) {
-
-	int index(in_path->rfind("/"));
-	std::string end = in_path->substr(index + 1);
-	std::string newpath = *out_path + "/" + end;
-	
-	auto copyoptions = fs::copy_options::recursive;
-
-	if (overwrite) {
-		copyoptions = fs::copy_options::recursive | fs::copy_options::overwrite_existing;
-	}
-
-	if (!fs::exists(newpath)) {
-		fs::create_directories(newpath);
-	}
-	else if(fs::exists(newpath) && overwrite == false) {
-		std::cout << "Path already exists! Overwrite? [y/n]" << std::endl;
-		char input;
-		std::cin >> input;
-		if (input == 'y') {
-			copyoptions = fs::copy_options::recursive | fs::copy_options::overwrite_existing;
-		}
-		else if (input == 'n') {
-			std::cout << "Skipped!" << std::endl;
-			return 1; 
-		}
-		else {
-			std::cout << "Bad input" << std::endl;
-			return 1;
-		}
-	}
-
-	fs::copy(*in_path, newpath, copyoptions);
-	return 0;
-
-}
-
 std::string pathfix(const std::string* input) {
 
 	std::string output;
@@ -240,27 +203,38 @@ void overwrite_dialogue(bool* overwrite_ptr) {
 
 int loadfromtxt(std::string path = "") {
 	std::string path_out;
-	if (path.empty() == true) {
-		std::cout << "Path to load from?\n";
-		std::cin >> path;
+	while (true) {
+		if (path.empty() == true) {
+			std::cout << "\nPath to load from?\n";
+			std::cin >> path;
+		}
+		else {
+			std::cout << "Loaded from dragged .txt\n";
+		}
+
+		path_out = pathfix(&path);
+
+		if (path_out.rfind(".txt") == std::string::npos) {
+			std::cout << "Invalid filetype!\n";
+			path_out.erase(path_out.begin(), path_out.end());
+			path.erase(path.begin(), path.end());
+			std::cin.clear();
+			std::cin.ignore(10000, '\n');
+		}
+
+		else if (!fs::exists(path_out)) {
+			std::cout << "Path does not exist!\n";
+			path_out.erase(path_out.begin(), path_out.end());
+			path.erase(path.begin(), path.end());
+			std::cin.clear();
+			std::cin.ignore(10000, '\n');
+		}
+
+		else {
+			break;
+		}
+
 	}
-	else {
-		std::cout << "Loaded from dragged .txt\n";
-	}
-
-	path_out = pathfix(&path);
-
-	if (path_out.rfind(".txt") == std::string::npos) {
-		std::cout << "Invalid filetype!\n";
-		return 0;
-	}
-
-	if (!fs::exists(path_out)) {
-		std::cout << "Path does not exist!\n";
-		return 0;
-	}
-
-
 
 	std::ifstream file_open(path_out, std::ios_base::in);
 	std::string output;

@@ -238,12 +238,29 @@ void overwrite_dialogue(bool* overwrite_ptr) {
 	}
 }
 
-int loadfromtxt() {
-	std::string path, path_out;
+int loadfromtxt(std::string path = "") {
+	std::string path_out;
+	if (path.empty() == true) {
+		std::cout << "Path to load from?\n";
+		std::cin >> path;
+	}
+	else {
+		std::cout << "Loaded from dragged .txt\n";
+	}
 
-	std::cout << "Path to load from?\n";
-	std::cin >> path;
 	path_out = pathfix(&path);
+
+	if (path_out.rfind(".txt") == std::string::npos) {
+		std::cout << "Invalid filetype!\n";
+		return 0;
+	}
+
+	if (!fs::exists(path_out)) {
+		std::cout << "Path does not exist!\n";
+		return 0;
+	}
+
+
 
 	std::ifstream file_open(path_out, std::ios_base::in);
 	std::string output;
@@ -422,12 +439,29 @@ bool start_menu() {
 
 }
 
-int main() {
+int main(int argc, char* argv[]) {
 
 	std::cout << "AntiProtonic's Backup Utility" << std::endl;
 
-	while (start_menu()) {
+	if (argc > 1) {
+		std::string string = argv[1];
+		if (string.rfind(".txt") != std::string::npos) {
+			loadfromtxt(argv[1]);
+		}
+		else {
+			std::cout << "Invalid filetype!\n";
+			while (start_menu()) {
 
+			}
+		}
+
+
+	}
+	
+	else {
+		while (start_menu()) {
+
+		}
 	}
 	return 0;
 

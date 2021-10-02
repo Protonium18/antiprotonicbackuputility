@@ -8,4 +8,4 @@ Features:
  - Console-based interface
  - Copying files via the 'path-pair' system.
  - Loading .txt files containing source-destination path pairs through program, and through drag and drop.
- - Reading and writing .txt files from anywhere on the system.
+ - Saving path-pairs into .txt files.

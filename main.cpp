@@ -375,8 +375,8 @@ bool start_menu() {
 	std::cout << " \n";
 	std::cout << "1. Single copy\n";
 	std::cout << "2. Multi-copy\n";
-	std::cout << "3. Load path pairs from .txt\n";
-	std::cout << "4. Write paths to .txt\n";
+	std::cout << "3. Load path-pairs from .txt\n";
+	std::cout << "4. Write path-pairs to .txt\n";
 	std::cout << "5. Quit\n";
 
 	while (true) {
